@@ -15,4 +15,9 @@ export const authAPI = {
   checkAuth: () => api.get("/auth/check"),
 };
 
+export const visitAPI = {
+  getDoctors: () => api.get("/visits/doctors"),
+  createVisit: (doctorId) => api.post("/visits", { doctorId }),
+  getMyVisits: () => api.get("/visits/my-visits"),
+};
 export default api;

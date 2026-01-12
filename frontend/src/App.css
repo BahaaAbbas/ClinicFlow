@@ -16,6 +16,36 @@ body {
   padding: 20px;
 }
 
+/* Navbar */
+.navbar {
+  background-color: #4a90e2;
+  color: white;
+  padding: 15px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar h1 {
+  font-size: 24px;
+}
+
+.navbar-right {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.navbar-user {
+  font-size: 14px;
+}
+
 /* Auth */
 .auth-container {
   display: flex;
@@ -140,6 +170,29 @@ body {
   border-color: #4a90e2;
 }
 
+/* Status badges */
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-pending {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.badge-in-progress {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.badge-completed {
+  background-color: #28a745;
+  color: white;
+}
+
 /* Alert */
 .alert {
   padding: 12px;
@@ -159,6 +212,29 @@ body {
   border: 1px solid #c3e6cb;
 }
 
+/* Tables */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.table tr:hover {
+  background-color: #f8f9fa;
+}
+
 /* Loading */
 .loading {
   text-align: center;
@@ -171,4 +247,12 @@ body {
   text-align: center;
   padding: 40px;
   color: #999;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar-content {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
