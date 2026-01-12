@@ -2,17 +2,32 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectMDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
+import errorHandler from "./middleware/error.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 const app = express();
 connectMDB();
 
-app.use(cors());
-app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
+app.use(express.json());
+app.use(cookieParser());
+
+//test
 app.get("/", (req, res) => {
-  res.send("Server returned corrctly");
+  res.json("Server returned correctly");
 });
+
+app.use("/api/auth", authRoutes);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 8000;
 
