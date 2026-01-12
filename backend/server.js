@@ -2,9 +2,11 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectMDB from "./config/db.js";
-import authRoutes from "./routes/authRoutes.js";
 import errorHandler from "./middleware/error.js";
 import cookieParser from "cookie-parser";
+
+import authRoutes from "./routes/authRoutes.js";
+import visitRoutes from "./routes/visitRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -34,6 +36,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/visits", visitRoutes);
 
 app.use(errorHandler);
 
