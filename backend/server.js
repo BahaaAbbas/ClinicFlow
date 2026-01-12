@@ -12,9 +12,17 @@ dotenv.config();
 const app = express();
 connectMDB();
 
+const allowedOrigins = ["http://localhost:5173", process.env.FRONTEND_URL];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        return callback(new Error("CORS not allowed"), false);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
@@ -33,7 +41,10 @@ app.use("/api/visits", visitRoutes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 8000;
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`Server started at Port ${PORT}`);
+  });
+}
 
-app.listen(PORT, () => {
-  console.log(`Server started at Port ${PORT}`);
-});
+export default app;
