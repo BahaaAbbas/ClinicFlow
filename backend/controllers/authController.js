@@ -12,7 +12,8 @@ const generateToken = (id) => {
 const setTokenCookie = (res, token) => {
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
@@ -87,7 +88,8 @@ export const logout = async (req, res, next) => {
   try {
     res.cookie("token", "", {
       httpOnly: true,
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       expires: new Date(0),
     });
 
