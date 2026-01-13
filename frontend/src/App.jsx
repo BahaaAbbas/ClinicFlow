@@ -32,6 +32,7 @@ function App() {
               </PrivateRoute>
             }
           />
+
           <Route
             path="/finance"
             element={
