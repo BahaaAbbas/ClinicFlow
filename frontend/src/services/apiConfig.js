@@ -16,8 +16,18 @@ export const authAPI = {
 };
 
 export const visitAPI = {
+  //Patient
   getDoctors: () => api.get("/visits/doctors"),
   createVisit: (doctorId) => api.post("/visits", { doctorId }),
   getMyVisits: () => api.get("/visits/my-visits"),
+
+  //Doctor
+  getActiveVisit: () => api.get("/visits/active"),
+  getPendingVisits: () => api.get("/visits/pending"),
+  startVisit: (id) => api.put(`/visits/${id}/start`),
+  addTreatment: (id, data) => api.put(`/visits/${id}/add-treatment`, data),
+  updateNotes: (id, medicalNotes) =>
+    api.put(`/visits/${id}/notes`, { medicalNotes }),
+  completeVisit: (id) => api.put(`/visits/${id}/complete`),
 };
 export default api;
