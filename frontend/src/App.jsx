@@ -24,6 +24,7 @@ function App() {
               </PrivateRoute>
             }
           />
+
           <Route
             path="/doctor"
             element={
@@ -32,6 +33,7 @@ function App() {
               </PrivateRoute>
             }
           />
+
           <Route
             path="/finance"
             element={
