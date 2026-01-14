@@ -6,9 +6,11 @@ import {
   completeVisit,
   createVisit,
   getActiveVisit,
+  getAllVisits,
   getDoctors,
   getMyVisits,
   getPendingVisits,
+  searchVisits,
   startVisit,
   updateMedicalNotes,
 } from "../controllers/visitController.js";
@@ -37,5 +39,9 @@ router.put(
   updateMedicalNotes
 );
 router.put("/:id/complete", protectRoutes, authorize("doctor"), completeVisit);
+
+//finance
+router.get("/search", protectRoutes, authorize("finance"), searchVisits);
+router.get("/", protectRoutes, authorize("finance"), getAllVisits);
 
 export default router;

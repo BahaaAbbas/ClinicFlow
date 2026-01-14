@@ -7,6 +7,7 @@ import PatientDashboard from "./pages/PatientDashboard";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import FinanceDashboard from "./pages/FinanceDashboard";
 import PrivateRoute from "./components/PrivateRoute";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 
 function App() {
   return (
@@ -39,6 +40,15 @@ function App() {
             element={
               <PrivateRoute allowedRoles={["finance"]}>
                 <FinanceDashboard />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute allowedRoles={["finance"]}>
+                <AnalyticsDashboard />
               </PrivateRoute>
             }
           />

@@ -29,5 +29,10 @@ export const visitAPI = {
   updateNotes: (id, medicalNotes) =>
     api.put(`/visits/${id}/notes`, { medicalNotes }),
   completeVisit: (id) => api.put(`/visits/${id}/complete`),
+
+  //Finance
+  getAllVisits: () => api.get("/visits"),
+  searchVisits: (params) => api.get("/visits/search", { params }),
 };
+
 export default api;

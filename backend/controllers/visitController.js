@@ -1,5 +1,6 @@
 import Visit from "../models/Visit.js";
 import User from "../models/User.js";
+import mongoose from "mongoose";
 
 // (Patient)
 export const getDoctors = async (req, res, next) => {
@@ -272,6 +273,63 @@ export const completeVisit = async (req, res, next) => {
       "name email"
     );
     res.json(updatedVisit);
+  } catch (error) {
+    next(error);
+  }
+};
+
+//(Finance)
+export const searchVisits = async (req, res, next) => {
+  try {
+    const { doctorName, patientName, visitId } = req.query;
+
+    let query = {};
+
+    if (
+      !mongoose.Types.ObjectId.isValid(visitId) &&
+      patientName == "" &&
+      doctorName == ""
+    ) {
+      return res.json([]);
+    }
+
+    if (visitId && mongoose.Types.ObjectId.isValid(visitId)) {
+      query._id = visitId;
+    }
+
+    let visits = Visit.find(query)
+      .populate("patient", "name email")
+      .populate("doctor", "name email");
+
+    let results = await visits.sort({ createdAt: -1 });
+
+    if (doctorName) {
+      results = results.filter((visit) =>
+        visit.doctor.name.toLowerCase().includes(doctorName.toLowerCase())
+      );
+    }
+
+    if (patientName) {
+      results = results.filter((visit) =>
+        visit.patient.name.toLowerCase().includes(patientName.toLowerCase())
+      );
+    }
+
+    res.json(results);
+  } catch (error) {
+    next(error);
+  }
+};
+
+//(Finance)
+export const getAllVisits = async (req, res, next) => {
+  try {
+    const visits = await Visit.find()
+      .populate("patient", "name email")
+      .populate("doctor", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json(visits);
   } catch (error) {
     next(error);
   }
