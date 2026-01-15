@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { visitAPI } from "../services/apiConfig";
+import Pagination from "../components/Pagination";
+import usePagination from "../hooks/usePagination";
 
 const PatientDashboard = () => {
   const [doctors, setDoctors] = useState([]);
@@ -66,6 +68,11 @@ const PatientDashboard = () => {
   const handleCloseDetails = () => {
     setSelectedVisit(null);
   };
+
+  const { currentData, currentPage, totalPages, next, prev } = usePagination(
+    visits,
+    3
+  );
 
   if (loading) return <div className="loading">Loading...</div>;
 
@@ -137,10 +144,11 @@ const PatientDashboard = () => {
                   <th>Doctor</th>
                   <th>Status</th>
                   <th>Total Amount</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {visits.map((visit) => (
+                {currentData.map((visit) => (
                   <tr key={visit._id}>
                     <td>
                       {new Date(visit.createdAt).toLocaleString("en-US", {
@@ -170,6 +178,13 @@ const PatientDashboard = () => {
               </tbody>
             </table>
           )}
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onNext={next}
+            onPrev={prev}
+          />
         </div>
 
         {/* modal */}

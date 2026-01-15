@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import TreatmentForm from "../components/TreatmentForm";
 import { visitAPI } from "../services/apiConfig";
+import Pagination from "../components/Pagination";
+import usePagination from "../hooks/usePagination";
 
 const DoctorDashboard = () => {
   const [activeVisit, setActiveVisit] = useState(null);
@@ -74,6 +76,11 @@ const DoctorDashboard = () => {
     }
   };
 
+  const { currentData, currentPage, totalPages, next, prev } = usePagination(
+    pendingVisits,
+    2
+  );
+
   if (loading) return <div className="loading">Loading...</div>;
 
   return (
@@ -102,7 +109,7 @@ const DoctorDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {pendingVisits.map((visit) => (
+                {currentData.map((visit) => (
                   <tr key={visit._id}>
                     <td>{visit.patient.name}</td>
                     <td>{new Date(visit.createdAt).toLocaleString()}</td>
@@ -119,6 +126,13 @@ const DoctorDashboard = () => {
                 ))}
               </tbody>
             </table>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onNext={next}
+              onPrev={prev}
+            />
           </div>
         )}
 

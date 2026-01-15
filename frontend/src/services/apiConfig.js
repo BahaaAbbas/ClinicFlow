@@ -35,4 +35,8 @@ export const visitAPI = {
   searchVisits: (params) => api.get("/visits/search", { params }),
 };
 
+export const dashboardAPI = {
+  getStats: () => api.get("/dashboard/stats"),
+};
+
 export default api;

@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { visitAPI } from "../services/apiConfig";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import Pagination from "../components/Pagination";
+import usePagination from "../hooks/usePagination";
 
 const FinanceDashboard = () => {
   const navigate = useNavigate();
+  const [searchParamsURL, setSearchParamsURL] = useSearchParams();
+
   const [visits, setVisits] = useState([]);
   const [filteredVisits, setFilteredVisits] = useState([]);
   const [searchParams, setSearchParams] = useState({
-    doctorName: "",
-    patientName: "",
-    visitId: "",
+    doctorName: searchParamsURL.get("doctorName") || "",
+    patientName: searchParamsURL.get("patientName") || "",
+    visitId: searchParamsURL.get("visitId") || "",
   });
   const [loading, setLoading] = useState(true);
   const [selectedVisit, setSelectedVisit] = useState(null);
@@ -18,6 +22,16 @@ const FinanceDashboard = () => {
   useEffect(() => {
     fetchVisits();
   }, []);
+
+  useEffect(() => {
+    if (
+      searchParamsURL.get("doctorName") ||
+      searchParamsURL.get("patientName") ||
+      searchParamsURL.get("visitId")
+    ) {
+      performSearch(searchParams);
+    }
+  }, [visits]);
 
   const fetchVisits = async () => {
     try {
@@ -30,19 +44,30 @@ const FinanceDashboard = () => {
     }
   };
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const performSearch = async (params) => {
     try {
-      const response = await visitAPI.searchVisits(searchParams);
+      const response = await visitAPI.searchVisits(params);
       setFilteredVisits(response.data);
     } catch (error) {
       console.error("Search failed", error);
     }
   };
 
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    const params = {};
+    if (searchParams.doctorName) params.doctorName = searchParams.doctorName;
+    if (searchParams.patientName) params.patientName = searchParams.patientName;
+    if (searchParams.visitId) params.visitId = searchParams.visitId;
+
+    setSearchParamsURL(params);
+    performSearch(searchParams);
+  };
+
   const handleReset = () => {
     setSearchParams({ doctorName: "", patientName: "", visitId: "" });
     setFilteredVisits(visits);
+    setSearchParamsURL({});
   };
 
   const viewDetails = (visit) => {
@@ -52,6 +77,11 @@ const FinanceDashboard = () => {
   const closeDetails = () => {
     setSelectedVisit(null);
   };
+
+  const { currentData, currentPage, totalPages, next, prev } = usePagination(
+    filteredVisits,
+    3
+  );
 
   const getStatusBadge = (status) => {
     return <span className={`badge badge-${status}`}>{status}</span>;
@@ -167,7 +197,7 @@ const FinanceDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredVisits.map((visit) => (
+                {currentData.map((visit) => (
                   <tr key={visit._id}>
                     <td>{visit._id}</td>
                     <td>
@@ -198,6 +228,13 @@ const FinanceDashboard = () => {
               </tbody>
             </table>
           )}
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onNext={next}
+            onPrev={prev}
+          />
         </div>
 
         {selectedVisit && (
