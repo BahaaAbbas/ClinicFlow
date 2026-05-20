@@ -17,13 +17,14 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "http://localhost:3000",
       "https://clinic-flow-frontend.vercel.app",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
     exposedHeaders: ["Set-Cookie"],
-  })
+  }),
 );
 
 app.use(express.json());
@@ -41,10 +42,9 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 8000;
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
-    console.log(`Server started at Port ${PORT}`);
-  });
-}
+
+app.listen(PORT, () => {
+  console.log(`Server started at Port ${PORT}`);
+});
 
 export default app;
