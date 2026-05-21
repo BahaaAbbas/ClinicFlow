@@ -1,4 +1,4 @@
-name: Docker CI
+name: Docker CI/CD
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,12 +17,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build backend image
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
-          push: false
-          tags: clinicflow-backend:latest
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/clinicflow-backend:latest
 
       - name: Build frontend image
         uses: docker/build-push-action@v5
@@ -30,3 +36,17 @@ jobs:
           context: ./frontend
           push: false
           tags: clinicflow-frontend:latest
+
+      - name: Azure Login
+        if: github.ref == 'refs/heads/main'
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Container Apps
+        if: github.ref == 'refs/heads/main'
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          containerAppName: clinicflow-backend
+          resourceGroup: clinicflow-rg
+          imageToDeploy: ${{ secrets.DOCKERHUB_USERNAME }}/clinicflow-backend:latest
