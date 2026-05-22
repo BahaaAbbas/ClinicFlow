@@ -70,7 +70,7 @@ The frontend is a static React SPA served via Nginx inside a Docker container lo
 
 Two separate Dockerfiles — one per service.
 
-Backend uses a single-stage Node Alpine image with production-only dependencies. Frontend uses a multi-stage build: Node Alpine compiles the Vite/React app, then the output is served by an Nginx Alpine image. Final frontend image is under 30MB.
+Backend uses a single-stage Node Alpine image with production-only dependencies. Frontend uses a multi-stage build: Node Alpine compiles the Vite/React app, then the output is served by an Nginx Alpine image.
 
 Docker Compose wires both services locally with environment injection from a root `.env` file.
 
@@ -86,16 +86,6 @@ On every push to `main`:
 6. Deploy latest image to Azure Container Apps
 
 PRs trigger a build-only run (no push, no deploy) to catch Dockerfile errors before merging.
-
-### Environment Management
-
-| Context | How vars are loaded |
-|---------|-------------------|
-| Local dev (no Docker) | `backend/.env` via dotenv |
-| Local Docker | Root `.env` via Docker Compose `env_file` |
-| GitHub Actions | Repository secrets |
-| Azure | Container Apps secrets + env vars |
-| Vercel | Vercel dashboard environment variables |
 
 ---
 
