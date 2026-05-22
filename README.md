@@ -1,96 +1,151 @@
-# ClinicFlow - Healthcare Visit Management System
+# ClinicFlow
 
-> A full-stack healthcare application for managing patient visits, doctor appointments, and financial tracking.
+A full-stack healthcare visit management system built to handle real clinical workflows — patient bookings, doctor visit queues, treatment tracking, and finance analytics — across three distinct user roles.
 
-
-**🌐 Live Demo:** https://clinic-flow-frontend.vercel.app
-
-**🌐 API DOC:(Just simple sample)** https://documenter.getpostman.com/view/27338446/2sBXVhDB7H
-
+**Live Demo:** https://clinic-flow-frontend.vercel.app  
+**API Docs:** https://documenter.getpostman.com/view/27338446/2sBXVhDB7H  
+**Trello Board:** https://trello.com/b/4avJYsqF/clinicflow
 
 ---
 
-## 📋 Project Overview
+## What This Project Is
 
-The system provides a healthcare management platform that supports Patient, Doctor, and Finance user roles.
+ClinicFlow was built as a complete product, not a tutorial clone. It covers the full lifecycle of a patient visit — from booking through treatment to billing — with strict business rules enforced at the API level and role-based access across every route.
 
-### **Requirements Met**
-✅ Patient can login and book visits with doctors  
-✅ Doctor can start visits and add medical information  
-✅ Finance can review visits and billing information  
-✅ Doctors limited to 1 active visit at a time  
-✅ Multiple treatments per visit with automatic total calculation  
-✅ Multi-field search (doctor name, patient name, visit ID)  
-✅ Analytics dashboard with system statistics  
+The project has gone through two deployment phases:
+
+- **Phase 1:** Deployed on Vercel (frontend + backend as serverless functions) with MongoDB Atlas
+- **Phase 2 (current):** Containerized with Docker, CI/CD pipeline via GitHub Actions, backend migrated to Azure Container Apps
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-**Frontend:** React 19, React Router, Axios  
-**Backend:** Node.js, Express.js  
-**Database:** MongoDB Atlas (cloud)
-**Authentication:** JWT with HttpOnly Cookies  
-**Api Testing:** Postman
-**Deployment:** Vercel 
-
-
----
-
-## 🏗️ Development Approach
-
-### **Planning & Setup**
-
-* Defined user roles and database schema
-* Structured the project using MVC
-* Initialized version control
-* Used a Trello board for task tracking and time management
-(https://trello.com/b/4avJYsqF/clinicflow)
-
-### **Backend**
-
-* Implemented role-based authentication and authorization
-* Built RESTful APIs with core business rules
-* Added JWT authentication and visit logic
-
-### **Frontend**
-
-* Developed role-based dashboards with React
-* Implemented authentication and visit workflows
-* Added doctor and finance-specific features
-
-### **Polish & Deployment**
-
-* Improved UI/UX and added analytics
-* Tested user flows and handled errors
-* Deployed to Vercel with MongoDB Atlas
-
+| Layer | Technology |
+|-------|------------|
+| Frontend | React 19, React Router, Axios |
+| Backend | Node.js, Express.js |
+| Database | MongoDB Atlas |
+| Auth | JWT + HttpOnly Cookies |
+| Containerization | Docker, Docker Compose |
+| CI/CD | GitHub Actions |
+| Registry | Docker Hub |
+| Cloud | Azure Container Apps |
+| Frontend Hosting | Vercel |
 
 ---
 
-## 💾 Database Schema
+## Architecture
 
-### **Users Collection**
+```
+GitHub (push to main)
+        |
+GitHub Actions
+        |
+   _____|______
+  |            |
+Build        Build
+Backend      Frontend
+Image        Image
+  |
+Push to Docker Hub
+  |
+Azure Container Apps
+pulls latest image
+  |
+Backend running
+at Azure URL
+        |
+Vercel Frontend
+calls Azure API
+```
+
+The frontend is a static React SPA served via Nginx inside a Docker container locally, and via Vercel in production. The backend is a Node/Express API containerized with Docker and deployed to Azure Container Apps with scale-to-zero enabled (cost-efficient, no idle charges).
+
+---
+
+## DevOps Implementation
+
+### Docker
+
+Two separate Dockerfiles — one per service.
+
+Backend uses a single-stage Node Alpine image with production-only dependencies. Frontend uses a multi-stage build: Node Alpine compiles the Vite/React app, then the output is served by an Nginx Alpine image. Final frontend image is under 30MB.
+
+Docker Compose wires both services locally with environment injection from a root `.env` file.
+
+### GitHub Actions
+
+On every push to `main`:
+
+1. Checkout code
+2. Set up Docker Buildx
+3. Login to Docker Hub using repository secrets
+4. Build and push backend image to Docker Hub
+5. Login to Azure using a service principal
+6. Deploy latest image to Azure Container Apps
+
+PRs trigger a build-only run (no push, no deploy) to catch Dockerfile errors before merging.
+
+### Environment Management
+
+| Context | How vars are loaded |
+|---------|-------------------|
+| Local dev (no Docker) | `backend/.env` via dotenv |
+| Local Docker | Root `.env` via Docker Compose `env_file` |
+| GitHub Actions | Repository secrets |
+| Azure | Container Apps secrets + env vars |
+| Vercel | Vercel dashboard environment variables |
+
+---
+
+## Features by Role
+
+### Patient
+- Book visits with available doctors
+- View visit history and status
+- See treatment details and total costs
+
+### Doctor
+- View pending visit queue
+- Manage one active visit at a time (enforced server-side)
+- Add multiple treatments with costs and notes
+- Complete visits
+
+### Finance
+- Search visits by patient name, doctor name, or visit ID
+- View all billing details
+- Access analytics dashboard with revenue and visit statistics
+
+### Business Rules (enforced at API level)
+- Doctor can have only one active visit at a time
+- Patient cannot book the same doctor twice if a visit is pending or in-progress
+- Visit totals are auto-calculated from treatment costs
+- Role-based middleware protects every route
+
+---
+
+## Database Schema
+
+### Users
 ```javascript
 {
   _id: ObjectId,
   name: String,
-  email: String (unique),
-  password: String (hashed),
+  email: String, // unique
+  password: String, // bcrypt hashed
   role: "patient" | "doctor" | "finance"
 }
 ```
 
-### **Visits Collection**
+### Visits
 ```javascript
 {
   _id: ObjectId,
-  patient: ObjectId (ref: User),
-  doctor: ObjectId (ref: User),
+  patient: ObjectId,
+  doctor: ObjectId,
   status: "pending" | "in-progress" | "completed",
-  treatments: [
-    { name: String, cost: Number, notes: String }
-  ],
+  treatments: [{ name: String, cost: Number, notes: String }],
   totalAmount: Number,
   medicalNotes: String,
   completedAt: Date
@@ -99,116 +154,95 @@ The system provides a healthcare management platform that supports Patient, Doct
 
 ---
 
+## API Endpoints
 
-## 👥 Demo Accounts
-
-| Role | Email | Password | Username |
-|------|-------|----------|----------|
-| Doctor | yanal@gmail.com | 123456 | Yanal |
-| Doctor | yara@gmail.com | 123456 | Yara |
-| Finance | abbas@gmail.com | 123456 | abbas |
-| Patient | bahaa@gmail.com | 123456 | bahaa |
-| Patient | john@gmail.com | 123456 | John |
-| Patient | abd@gmail.com | 123456 | Abd |
-
----
-
-## 📡 Core API Endpoints
-
-### **Authentication**
+### Auth
 ```
-POST /api/auth/register  - Register new user
-POST /api/auth/login     - Login (sets HttpOnly cookie)
-POST /api/auth/logout    - Logout
-GET  /api/auth/check     - Verify authentication
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/logout
+GET  /api/auth/check
 ```
 
-### **Visits (Patient)**
+### Patient
 ```
-GET  /api/visits/doctors      - Get all doctors
-POST /api/visits              - Book a visit
-GET  /api/visits/my-visits    - Get patient's visits
-```
-
-### **Visits (Doctor)**
-```
-GET /api/visits/active            - Get current active visit
-GET /api/visits/pending           - Get pending visits queue
-PUT /api/visits/:id/start         - Start a visit
-PUT /api/visits/:id/add-treatment - Add treatment
-PUT /api/visits/:id/notes         - Update medical notes
-PUT /api/visits/:id/complete      - Complete visit
+GET  /api/visits/doctors
+POST /api/visits
+GET  /api/visits/my-visits
 ```
 
-### **Visits (Finance)**
+### Doctor
 ```
-GET /api/visits                    - Get all visits
-GET /api/visits/search             - Search  visits
-GET /api/dashboard/stats           - Analytics data
+GET /api/visits/active
+GET /api/visits/pending
+PUT /api/visits/:id/start
+PUT /api/visits/:id/add-treatment
+PUT /api/visits/:id/notes
+PUT /api/visits/:id/complete
+```
+
+### Finance
+```
+GET /api/visits
+GET /api/visits/search
+GET /api/dashboard/stats
 ```
 
 ---
 
-## ✨ Key Features
+## Security
 
-### **Patient Features**
-- Book visits with available doctors
-- View visit history and status
-- See treatment details and costs
-- View completed visit summaries
-
-### **Doctor Features**
-- View pending visits 
-- Manage one active visit at a time
-- Add multiple treatments with costs
-- Write medical notes
-- Complete visits
-
-### **Finance Features**
-- Search visits by multiple criteria
-- View all visit details and billing
-- Access analytics dashboard
-- Track revenue and statistics
-
-### **Business Rules Implemented**
-1. ✅ Doctor can have only 1 active (in-progress) visit
-2. ✅ Patient can have multiple pending visits but only 1 in-progress
-3. ✅ Patient cannot book same doctor twice if pending/in-progress
-4. ✅ Auto-calculation of visit totals (sum of treatments)
-5. ✅ Multi-field search with AND logic
+- JWT authentication with 7-day expiration
+- HttpOnly cookies (XSS protection)
+- bcrypt password hashing
+- Role-based access control middleware on all protected routes
+- CORS restricted to specific origins
+- Secrets managed via environment variables, never committed
 
 ---
 
-## 🔒 Security Features
+## Demo Accounts
 
-- **JWT Authentication** with 7-day expiration
-- **HttpOnly Cookies** (XSS protection)
-- **bcrypt Password Hashing** 
-- **Role-Based Access Control** (RBAC middleware)
-- **CORS** configured for specific origins
-- **Environment Variables** for sensitive data
-
----
-
-
-## 🚀 Deployment
-
-**Live URLs:**
-- Frontend: https://clinic-flow-frontend.vercel.app
-- Backend: https://clinic-flow-backend.vercel.app
-
+| Role | Email | Password |
+|------|-------|----------|
+| Doctor | yanal@gmail.com | 123456 |
+| Doctor | yara@gmail.com | 123456 |
+| Finance | abbas@gmail.com | 123456 |
+| Patient | bahaa@gmail.com | 123456 |
+| Patient | john@gmail.com | 123456 |
 
 ---
 
-## 📝 Future Enhancements
+## Running Locally with Docker
+
+```bash
+# Clone the repo
+git clone https://github.com/BahaaAbbas/ClinicFlow.git
+cd ClinicFlow
+
+# Create root .env with your values
+cp .env.example .env
+
+# Build and run
+docker compose up --build
+
+# Frontend → http://localhost:3000
+# Backend  → http://localhost:8000
+```
+
+---
+
+## Planned Improvements
 
 - Payment integration
-- Appointment scheduling with calendar
-- Medical reports
+- Calendar-based appointment scheduling
+- Medical report generation
+- Test coverage (Jest + Supertest)
 
 ---
 
-## 👨‍💻 Developer
+## Developer
 
-**Bahaa Abbas**  
-GitHub: [@BahaaAbbas](https://github.com/BahaaAbbas)
+**Bahaa Abbas** — Full-Stack Developer  
+GitHub: [@BahaaAbbas](https://github.com/BahaaAbbas)  
+Live: https://clinic-flow-frontend.vercel.app
